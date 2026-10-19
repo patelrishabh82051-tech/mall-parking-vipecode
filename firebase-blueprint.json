@@ -1,0 +1,189 @@
+{
+  "entities": {
+    "Slot": {
+      "title": "Slot",
+      "description": "A physical parking bay in the smart mall garage",
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Slot identifier (e.g. F1-A01)",
+          "pattern": "^[A-Za-z0-9_-]+$",
+          "maxLength": 64
+        },
+        "floor": {
+          "type": "string",
+          "description": "Floor level (e.g. B1, B2, 1F, 2F)",
+          "maxLength": 16
+        },
+        "zone": {
+          "type": "string",
+          "description": "Parking zone within the floor (e.g. Zone A, Zone B)",
+          "maxLength": 32
+        },
+        "status": {
+          "type": "string",
+          "description": "Current availability state",
+          "enum": ["free", "reserved", "occupied", "disabled"]
+        },
+        "type": {
+          "type": "string",
+          "description": "Slot category (standard, EV charging, handicap accessible, VIP)",
+          "enum": ["standard", "ev", "handicap", "vip"]
+        },
+        "pricePerHour": {
+          "type": "number",
+          "description": "Hourly parking fee in USD or local currency"
+        },
+        "updatedAt": {
+          "type": "number",
+          "description": "Timestamp of last status update"
+        }
+      },
+      "required": ["id", "floor", "zone", "status", "pricePerHour"]
+    },
+    "Booking": {
+      "title": "Booking",
+      "description": "A parking reservation created by a driver",
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique booking document ID",
+          "pattern": "^[A-Za-z0-9_-]+$",
+          "maxLength": 64
+        },
+        "userId": {
+          "type": "string",
+          "description": "Firebase Auth UID of customer driver",
+          "maxLength": 128
+        },
+        "slotId": {
+          "type": "string",
+          "description": "Associated slot ID",
+          "pattern": "^[A-Za-z0-9_-]+$",
+          "maxLength": 64
+        },
+        "vehicleNo": {
+          "type": "string",
+          "description": "License plate or registration number",
+          "maxLength": 32
+        },
+        "startTime": {
+          "type": "number",
+          "description": "Reservation commencement epoch timestamp"
+        },
+        "endTime": {
+          "type": "number",
+          "description": "Reservation expiry epoch timestamp"
+        },
+        "status": {
+          "type": "string",
+          "description": "Booking lifecycle status",
+          "enum": ["upcoming", "active", "completed", "cancelled"]
+        },
+        "amount": {
+          "type": "number",
+          "description": "Calculated total fee based on hourly pricing and duration"
+        },
+        "createdAt": {
+          "type": "number",
+          "description": "Epoch timestamp when booking was placed"
+        }
+      },
+      "required": ["id", "userId", "slotId", "vehicleNo", "startTime", "endTime", "status", "amount", "createdAt"]
+    },
+    "UserProfile": {
+      "title": "UserProfile",
+      "description": "User account document in Firestore",
+      "type": "object",
+      "properties": {
+        "uid": {
+          "type": "string",
+          "description": "User Firebase Auth UID",
+          "maxLength": 128
+        },
+        "name": {
+          "type": "string",
+          "description": "Driver or Administrator full name",
+          "maxLength": 100
+        },
+        "email": {
+          "type": "string",
+          "description": "User email address",
+          "maxLength": 120
+        },
+        "role": {
+          "type": "string",
+          "description": "System access role",
+          "enum": ["driver", "admin"]
+        }
+      },
+      "required": ["uid", "name", "role"]
+    },
+    "EntryExitLog": {
+      "title": "EntryExitLog",
+      "description": "Barrier gate audit log for physical entry and exit",
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Gate event log ID",
+          "pattern": "^[A-Za-z0-9_-]+$",
+          "maxLength": 64
+        },
+        "bookingId": {
+          "type": "string",
+          "description": "Associated booking ID",
+          "maxLength": 64
+        },
+        "vehicleNo": {
+          "type": "string",
+          "description": "Vehicle license plate",
+          "maxLength": 32
+        },
+        "slotId": {
+          "type": "string",
+          "description": "Assigned slot ID",
+          "maxLength": 64
+        },
+        "entryTime": {
+          "type": "number",
+          "description": "Timestamp when gate opened for entry"
+        },
+        "exitTime": {
+          "type": "number",
+          "description": "Timestamp when gate opened for departure"
+        },
+        "feeCollected": {
+          "type": "number",
+          "description": "Total payment collected at departure gate"
+        },
+        "status": {
+          "type": "string",
+          "description": "Status of the parking session",
+          "enum": ["inside", "exited"]
+        }
+      },
+      "required": ["id", "vehicleNo", "slotId", "entryTime", "status"]
+    }
+  },
+  "firestore": {
+    "/slots/{slotId}": {
+      "schema": "Slot",
+      "description": "Publicly readable parking slots; writable strictly by administrators"
+    },
+    "/bookings/{bookingId}": {
+      "schema": "Booking",
+      "description": "User reservation records; readable and manageable by owner or mall admins"
+    },
+    "/users/{userId}": {
+      "schema": "UserProfile",
+      "description": "User profile with role definition; admins or owning user read only"
+    },
+    "/entryExitLogs/{logId}": {
+      "schema": "EntryExitLog",
+      "description": "Barrier gate entry and exit event audit records; admin access only"
+    }
+  }
+}

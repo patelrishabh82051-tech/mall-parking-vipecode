@@ -1,0 +1,6 @@
+{
+  "name": "ParkSmart - Smart Mall Parking System",
+  "description": "Real-time smart mall parking management system with live slot occupancy, transactional booking, QR code tickets, and role-protected admin controls.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
